@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+
 @RunWith(Parameterized.class)
 public class CreateOrdersTest {
 
@@ -25,6 +26,7 @@ public class CreateOrdersTest {
                 {OrdersGeneration.getColorBlack()},
                 {OrdersGeneration.getColorGrey()},
                 {OrdersGeneration.getColorGreyAndBlack()},
+                {OrdersGeneration.getOrders()},
         };
     }
 

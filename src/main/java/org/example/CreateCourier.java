@@ -7,7 +7,7 @@ import static io.restassured.RestAssured.given;
 
 public class CreateCourier extends Client {
     @Step("Создание нового пользователя")
-    public ValidatableResponse create(Courier courier){
+    public ValidatableResponse createCourier(Courier courier){
         return given()
                 .spec(getSpec())
                 .body(courier)
@@ -16,15 +16,6 @@ public class CreateCourier extends Client {
                 .then();
     }
 
-    @Step("Создание дубликата курьера")
-    public ValidatableResponse createDuplicate(Courier courier){
-        return given()
-                .spec(getSpec())
-                .body(courier)
-                .when()
-                .post("api/v1/courier")
-                .then();
-    }
     @Step("Вход в аккаунт")
     public ValidatableResponse login(Credentials credentials){
         return given()

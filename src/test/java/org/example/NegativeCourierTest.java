@@ -3,9 +3,11 @@ package org.example;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.hamcrest.Matchers.equalTo;
 
 public class NegativeCourierTest {
     private CreateCourier createCourier;
@@ -28,7 +30,7 @@ public class NegativeCourierTest {
     @Test
     @DisplayName("Логин курьера - негативные проверки ")
     public void loginCourierNegativeTest(){
-        ValidatableResponse responseCreate = createCourier.create(courier);//создание курьера
+        ValidatableResponse responseCreate = createCourier.createCourier(courier);//создание курьера
         ValidatableResponse responseLogin = createCourier.login(Credentials.from(courier)); //авторизация курьера
         ValidatableResponse responseLoginOnly = authorization.autorizationOnlyField(courier.getLogin());
         ValidatableResponse responsePasswordOnly = authorization.autorizationOnlyField(courier.getPassword());
@@ -36,11 +38,8 @@ public class NegativeCourierTest {
         ValidatableResponse responseLoginIncorrect = authorization.autorizationOnlyField(fakeLogin);
 
         id = responseLogin.extract().path("id");
-        int responseLoginCode = responseLoginOnly.extract().statusCode();
-        int responsePasswordCode = responsePasswordOnly.extract().statusCode();
-        String responseLoginIncorrectCode = responseLoginIncorrect.extract().path("message");
-        Assert.assertEquals("Ошибка при авторизации с одним заполненным полем" ,responseLoginCode, 400);
-        Assert.assertEquals("Ошибка при авторизации с одним заполненным полем" ,responsePasswordCode, 400);
-        Assert.assertEquals("Ошибка при авторизации с неправильным логином" ,responseLoginIncorrectCode, "Учетная запись не найдена");
+        responseLoginOnly.assertThat().statusCode(SC_BAD_REQUEST);
+        responsePasswordOnly.assertThat().statusCode(SC_BAD_REQUEST);
+        responseLoginIncorrect.assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 }

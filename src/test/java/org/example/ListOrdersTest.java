@@ -2,8 +2,9 @@ package org.example;
 
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
-import org.junit.Assert;
 import org.junit.Test;
+
+import static org.apache.http.HttpStatus.SC_OK;
 
 public class ListOrdersTest {
 
@@ -12,7 +13,6 @@ public class ListOrdersTest {
     public void orderListReturnTest(){
         CreateOrders createOrders = new CreateOrders();
         ValidatableResponse responseOrdersList = createOrders.orderListReturn();
-        int responseListOrders = responseOrdersList.extract().statusCode();
-        Assert.assertEquals("Ошибка при получении списка заказов", responseListOrders, 200);
+        responseOrdersList.assertThat().statusCode(SC_OK);
     }
 }

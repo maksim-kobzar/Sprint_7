@@ -3,16 +3,16 @@ package org.example;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.Matchers.equalTo;
 
 public class CourierTest {
     private CreateCourier createCourier;
     private Courier courier;
     private int id;
-
 
     @Before
     public void setUp(){
@@ -26,25 +26,36 @@ public class CourierTest {
     }
 
     @Test
-    @DisplayName("Создание курьера - позитивные проверки")
+    @DisplayName("Создание курьера - Создание курьера")
     public void createCourierTest(){
-        ValidatableResponse responseCreate = createCourier.create(courier);//создание курьера
+        ValidatableResponse responseCreate = createCourier.createCourier(courier);//создание курьера
         ValidatableResponse responseLogin = createCourier.login(Credentials.from(courier)); //авторизация курьера
-        ValidatableResponse responseCreateDuplicate = createCourier.createDuplicate(courier); //дубликат
+
+        id = responseLogin.extract().path("id");
+        responseCreate.assertThat().statusCode(SC_CREATED);
+        responseLogin.assertThat().statusCode(SC_OK);
+        responseCreate.body("ok", equalTo(true));
+    }
+
+    @Test
+    @DisplayName("Авторизация курьера с одним полем логин")
+    public void createCourierOnlyLoginTest(){
+        ValidatableResponse responseCreate = createCourier.createCourier(courier);//создание курьера
+        ValidatableResponse responseLogin = createCourier.login(Credentials.from(courier)); //авторизация курьера
         ValidatableResponse responseCreateOne = createCourier.createOnlyLogin(courier.getLogin()); //Заполнен только логин
 
         id = responseLogin.extract().path("id");
-        int responseCreateCode = responseCreate.extract().statusCode();
-        int responseLoginCode = responseLogin.extract().statusCode();
-        boolean responseOk = responseCreate.extract().path("ok");
-        int responseCreateDuplicateCode = responseCreateDuplicate.extract().statusCode();
-        int responseCreateOneCode = responseCreateOne.extract().statusCode();
-
-        Assert.assertEquals("Ошибка при создании курьера" ,responseCreateCode, 201);
-        Assert.assertEquals("Ошибка при входе в аккаунт", responseLoginCode, 200);
-        Assert.assertTrue("Ошибка в теле сообщения после создания курьера", responseOk);
-        Assert.assertEquals("Ошибка при создании дубликата курьера", responseCreateDuplicateCode, 409);
-        Assert.assertEquals("Ошибка при создании курьера с одним обязательным полем", responseCreateOneCode, 400);
+        responseCreateOne.assertThat().statusCode(SC_BAD_REQUEST);
     }
 
+    @Test
+    @DisplayName("Создание дубликата курьера")
+    public void createCourierDublicateTest(){
+        ValidatableResponse responseCreate = createCourier.createCourier(courier);//создание курьера
+        ValidatableResponse responseLogin = createCourier.login(Credentials.from(courier)); //авторизация курьера
+        ValidatableResponse responseCreateDuplicate = createCourier.createCourier(courier); //дубликат
+
+        id = responseLogin.extract().path("id");
+        responseCreateDuplicate.assertThat().statusCode(SC_CONFLICT);
+    }
 }
